@@ -17,3 +17,7 @@
 # vendor/
 internal/model/sql
 
+# Wails
+build/bin/
+frontend/dist/
+frontend/node_modules/
