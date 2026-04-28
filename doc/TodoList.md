@@ -5,33 +5,33 @@
 - [x] 使用 Wails CLI 初始化项目（`wails init -n next-terminal -t react-ts`）
 - [x] 配置 Tailwind CSS 4 到前端项目
 - [x] 配置 Zustand 状态管理
-- [ ] 建立 `internal/` 包结构（domain、service、model、infrastructure、app）
-- [ ] 实现 `internal/domain/` 领域模型（Connection、Credential、Session、Settings）
-- [ ] 实现 `internal/model/repository.go` 仓储接口
-- [ ] 集成 `modernc.org/sqlite`，实现 `internal/infrastructure/database/sqlite.go`（打开/迁移/关闭）
-- [ ] 编写 `migrations/001_init_schema.up.sql` 和 `001_init_schema.down.sql`
-- [ ] 实现 `internal/infrastructure/database/` 各仓储（connections、credentials、sessions、settings）
-- [ ] 实现 `internal/infrastructure/crypto/encryptor.go`（AES-256-GCM 加密/解密）
-- [ ] 实现平台数据目录解析（`internal/infrastructure/database/paths.go`）
-- [ ] 搭建前端基础 UI 骨架：侧边栏 + 空主区域 + 标题栏
-- [ ] 实现前端 connectionStore 和 settingsStore（Zustand）
-- [ ] 验证：应用可启动，SQLite 数据库自动创建，基础 UI 可交互
+- [x] 建立 `internal/` 包结构（domain、service、model、infrastructure、app）
+- [x] 实现 `internal/domain/` 领域模型（Connection、Credential、Session、Settings）
+- [x] 实现 `internal/model/repository.go` 仓储接口
+- [x] 集成 `modernc.org/sqlite`，实现 `internal/infrastructure/database/sqlite.go`（打开/迁移/关闭）
+- [x] 编写 `migrations/001_init_schema.up.sql` 和 `001_init_schema.down.sql`
+- [x] 实现 `internal/infrastructure/database/` 各仓储（connections、credentials、sessions、settings）
+- [x] 实现 `internal/infrastructure/crypto/encryptor.go`（AES-256-GCM 加密/解密）
+- [x] 实现平台数据目录解析（`internal/infrastructure/database/paths.go`）
+- [x] 搭建前端基础 UI 骨架：侧边栏 + 空主区域 + 标题栏
+- [x] 实现前端 connectionStore 和 settingsStore（Zustand）
+- [x] 验证：应用可启动，SQLite 数据库自动创建，基础 UI 可交互
 
 ## Phase 2：SSH 核心
 
-- [ ] 实现 `internal/infrastructure/ssh/auth.go`（密码认证、私钥认证）
-- [ ] 实现 `internal/infrastructure/ssh/client.go`（SSH 客户端工厂、直连拨号）
-- [ ] 实现 `internal/infrastructure/ssh/config.go`（ssh.ClientConfig 构建）
-- [ ] 实现 `internal/infrastructure/terminal/session.go`（SSH channel ↔ Wails Events 桥接、I/O 泵）
-- [ ] 实现 `internal/service/session_service.go`（会话生命周期管理）
-- [ ] 实现 `internal/service/connection_service.go`（连接 CRUD + 测试连接）
-- [ ] 实现 `internal/app/app.go`（Wails 绑定方法：StartSession、CloseSession、WriteToSession、ResizeSession）
-- [ ] 前端：集成 xterm.js + @xterm/addon-fit + @xterm/addon-web-links
-- [ ] 前端：实现 `XtermTerminal.tsx` 组件（终端实例创建、I/O 事件绑定、resize 处理）
-- [ ] 前端：实现 `TerminalTab.tsx` 和 `TerminalManager.tsx`（多 Tab 终端管理）
-- [ ] 前端：实现 `ConnectionForm.tsx`（创建/编辑 SSH 连接）
-- [ ] 前端：实现 `ConnectionList.tsx`（连接列表展示与搜索）
-- [ ] 验证：可创建 SSH 连接、打开终端 Tab、输入命令并看到输出、resize 终端
+- [x] 实现 `internal/infrastructure/ssh/auth.go`（密码认证、私钥认证）
+- [x] 实现 `internal/infrastructure/ssh/client.go`（SSH 客户端工厂、直连拨号）
+- [x] 实现 `internal/infrastructure/ssh/config.go`（ssh.ClientConfig 构建）
+- [x] 实现 `internal/infrastructure/terminal/session.go`（SSH channel ↔ Wails Events 桥接、I/O 泵）
+- [x] 实现 `internal/service/session_service.go`（会话生命周期管理）
+- [x] 实现 `internal/service/connection_service.go`（连接 CRUD + 测试连接）
+- [x] 实现 `internal/app/app.go`（Wails 绑定方法：StartSession、CloseSession、WriteToSession、ResizeSession）
+- [x] 前端：集成 xterm.js + @xterm/addon-fit + @xterm/addon-web-links
+- [x] 前端：实现 `XtermTerminal.tsx` 组件（终端实例创建、I/O 事件绑定、resize 处理）
+- [x] 前端：实现 `TerminalTab.tsx` 和 `TerminalManager.tsx`（多 Tab 终端管理）
+- [x] 前端：实现 `ConnectionForm.tsx`（创建/编辑 SSH 连接）
+- [x] 前端：实现 `ConnectionList.tsx`（连接列表展示与搜索）
+- [x] 验证：可创建 SSH 连接、打开终端 Tab、输入命令并看到输出、resize 终端
 
 ## Phase 3：跳板机与 MFA
 

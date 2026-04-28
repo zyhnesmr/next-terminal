@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS settings;
+DROP TABLE IF EXISTS session_history;
+DROP TABLE IF EXISTS credentials;
+DROP TABLE IF EXISTS groups;
+DROP TABLE IF EXISTS connections;
