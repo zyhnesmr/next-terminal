@@ -54,6 +54,10 @@ export function StartSession(arg1) {
   return window['go']['app']['App']['StartSession'](arg1);
 }
 
+export function SubmitMFAResponse(arg1, arg2) {
+  return window['go']['app']['App']['SubmitMFAResponse'](arg1, arg2);
+}
+
 export function TestConnection(arg1) {
   return window['go']['app']['App']['TestConnection'](arg1);
 }

@@ -35,15 +35,15 @@
 
 ## Phase 3：跳板机与 MFA
 
-- [ ] 实现 `internal/infrastructure/ssh/jump.go`（跳板机链式连接：逐跳 ProxyJump）
-- [ ] 实现 `internal/infrastructure/ssh/auth.go` MFA 部分（keyboard-interactive 回调）
-- [ ] 实现 MFA 挑战注册表（按 session ID 索引，带缓冲 channel + 超时）
-- [ ] 前端：实现 `MfaPrompt.tsx` 组件（接收挑战提示、用户输入、返回响应）
-- [ ] 前端：监听 `auth:mfa-required` 事件，弹窗 MFA 输入，发送 `auth:mfa-response`
-- [ ] 连接配置增加跳板机链选择（UI：多级跳板机下拉/拖拽排序）
-- [ ] 端到端测试：通过跳板机连接目标主机
-- [ ] 端到端测试：MFA 认证流程（密码 + TOTP）
-- [ ] 验证：可通过堡垒机连接目标、MFA 弹窗正常工作
+- [x] 实现 `internal/infrastructure/ssh/jump.go`（跳板机链式连接：逐跳 ProxyJump）
+- [x] 实现 `internal/infrastructure/ssh/auth.go` MFA 部分（keyboard-interactive 回调）
+- [x] 实现 MFA 挑战注册表（按 session ID 索引，带缓冲 channel + 超时）
+- [x] 前端：实现 `MfaPrompt.tsx` 组件（接收挑战提示、用户输入、返回响应）
+- [x] 前端：监听 `auth:mfa-required` 事件，弹窗 MFA 输入，发送 `auth:mfa-response`
+- [x] 连接配置增加跳板机链选择（UI：多级跳板机下拉/拖拽排序）
+- [x] 端到端测试：通过跳板机连接目标主机
+- [x] 端到端测试：MFA 认证流程（密码 + TOTP）
+- [x] 验证：可通过堡垒机连接目标、MFA 弹窗正常工作
 
 ## Phase 4：SFTP 与凭据管理
 

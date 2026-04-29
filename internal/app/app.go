@@ -20,6 +20,7 @@ type App struct {
 	credService     *service.CredentialService
 	settingsService *service.SettingsService
 	dialer          *ssh.Dialer
+	mfaRegistry     *ssh.MFAChallengeRegistry
 }
 
 func NewApp() *App {
@@ -68,11 +69,13 @@ func (a *App) Startup(ctx context.Context) {
 	}
 
 	a.dialer = ssh.NewDialer()
+	a.mfaRegistry = ssh.NewMFAChallengeRegistry(ctx)
 	a.connService = service.NewConnectionService(connRepo, groupRepo)
 	a.credService = service.NewCredentialService(credRepo, encryptor)
 	a.connService.SetCredentialService(a.credService)
 	a.sessionService = service.NewSessionService(sessionRepo, a.connService, a.credService, a.dialer)
 	a.sessionService.SetContext(ctx)
+	a.sessionService.SetMFARegistry(a.mfaRegistry)
 	a.settingsService = service.NewSettingsService(settingsRepo)
 
 	// Listen for terminal input events from frontend
@@ -100,6 +103,32 @@ func (a *App) Startup(ctx context.Context) {
 		if ok1 && ok2 && ok3 {
 			if err := a.sessionService.ResizeSession(sessionID, uint16(rows), uint16(cols)); err != nil {
 				slog.Warn("failed to resize session", "sessionID", sessionID, "error", err)
+			}
+		}
+	})
+
+	// Listen for MFA response events from frontend
+	runtime.EventsOn(ctx, "auth:mfa-response", func(optionalData ...interface{}) {
+		if len(optionalData) < 2 {
+			return
+		}
+		sessionID, ok1 := optionalData[0].(string)
+		responses, ok2 := optionalData[1].([]string)
+		if !ok1 || !ok2 {
+			// Try as []interface{} and convert
+			if raw, ok := optionalData[1].([]interface{}); ok {
+				responses = make([]string, len(raw))
+				for i, v := range raw {
+					if s, ok := v.(string); ok {
+						responses[i] = s
+					}
+				}
+				ok2 = true
+			}
+		}
+		if ok1 && ok2 {
+			if err := a.sessionService.SubmitMFAResponse(sessionID, responses); err != nil {
+				slog.Warn("failed to submit MFA response", "sessionID", sessionID, "error", err)
 			}
 		}
 	})
@@ -180,6 +209,11 @@ func (a *App) ResizeSession(sessionID string, rows int, cols int) error {
 
 func (a *App) GetActiveSessions() []*domain.ActiveSession {
 	return a.sessionService.GetActiveSessions()
+}
+
+// MFA
+func (a *App) SubmitMFAResponse(sessionID string, responses []string) error {
+	return a.sessionService.SubmitMFAResponse(sessionID, responses)
 }
 
 // Settings

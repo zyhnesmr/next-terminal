@@ -10,16 +10,29 @@ import (
 	"github.com/zyhnesmr/next-terminal/internal/domain"
 )
 
-type Dialer struct{}
+type Dialer struct {
+	mfaRegistry *MFAChallengeRegistry
+}
 
 func NewDialer() *Dialer {
 	return &Dialer{}
+}
+
+func (d *Dialer) SetMFARegistry(registry *MFAChallengeRegistry) {
+	d.mfaRegistry = registry
 }
 
 func (d *Dialer) Dial(ctx context.Context, conn *domain.Connection, password string, privateKey []byte, keyPassphrase string) (*gossh.Client, error) {
 	authMethods, err := BuildAuthMethods(password, privateKey, keyPassphrase)
 	if err != nil {
 		return nil, err
+	}
+
+	// Add MFA keyboard-interactive if needed
+	sessionID := ctx.Value("sessionID").(string)
+	if IsMFAAuth(domain.AuthMethod(conn.AuthMethod)) && d.mfaRegistry != nil && sessionID != "" {
+		mfaCallback := d.mfaRegistry.CreateCallback(sessionID)
+		authMethods = append(authMethods, gossh.KeyboardInteractive(mfaCallback))
 	}
 
 	timeout := time.Duration(conn.ConnectionTimeout) * time.Second
@@ -62,7 +75,6 @@ func (d *Dialer) Dial(ctx context.Context, conn *domain.Connection, password str
 
 	client := gossh.NewClient(sshConn, chans, reqs)
 
-	// Set up keep-alive
 	if conn.KeepAliveInterval > 0 {
 		go keepAlive(client, time.Duration(conn.KeepAliveInterval)*time.Second)
 	}
@@ -70,67 +82,46 @@ func (d *Dialer) Dial(ctx context.Context, conn *domain.Connection, password str
 	return client, nil
 }
 
-func (d *Dialer) DialWithJump(ctx context.Context, conn *domain.Connection, jumps []*JumpConfig) (*gossh.Client, error) {
-	if len(jumps) == 0 {
-		return nil, fmt.Errorf("no jump hosts specified")
-	}
-
-	// Connect to the first jump host directly
-	var currentClient *gossh.Client
-	var err error
-
-	for i, jump := range jumps {
-		if i == 0 {
-			currentClient, err = d.Dial(ctx, jump.Connection, jump.Password, jump.PrivateKey, jump.KeyPassphrase)
-			if err != nil {
-				return nil, fmt.Errorf("failed to connect to jump host %s: %w", jump.Connection.Name, err)
-			}
-		} else {
-			nextClient, err := jumpViaClient(currentClient, jump.Connection, jump.Password, jump.PrivateKey, jump.KeyPassphrase)
-			if err != nil {
-				currentClient.Close()
-				return nil, fmt.Errorf("failed to jump to %s: %w", jump.Connection.Name, err)
-			}
-			currentClient = nextClient
-		}
-	}
-
-	// Connect to the final target through the last jump host
-	targetClient, err := jumpViaClient(currentClient, conn, "", nil, "")
-	if err != nil {
-		currentClient.Close()
-		return nil, fmt.Errorf("failed to connect to target %s: %w", conn.Name, err)
-	}
-
-	return targetClient, nil
-}
-
-func jumpViaClient(client *gossh.Client, conn *domain.Connection, password string, privateKey []byte, keyPassphrase string) (*gossh.Client, error) {
+// DialSimple is a direct dial without MFA support, used for jump host connections.
+func (d *Dialer) DialSimple(ctx context.Context, conn *domain.Connection, password string, privateKey []byte, keyPassphrase string) (*gossh.Client, error) {
 	authMethods, err := BuildAuthMethods(password, privateKey, keyPassphrase)
 	if err != nil {
 		return nil, err
+	}
+
+	timeout := time.Duration(conn.ConnectionTimeout) * time.Second
+	if timeout == 0 {
+		timeout = 10 * time.Second
 	}
 
 	config := &gossh.ClientConfig{
 		User:            conn.Username,
 		Auth:            authMethods,
 		HostKeyCallback: gossh.InsecureIgnoreHostKey(),
-		Timeout:         time.Duration(conn.ConnectionTimeout) * time.Second,
+		Timeout:         timeout,
 	}
 
 	addr := fmt.Sprintf("%s:%d", conn.Host, conn.Port)
-	conn2, err := client.Dial("tcp", addr)
+
+	var dialer net.Dialer
+	netConn, err := dialer.DialContext(ctx, "tcp", addr)
 	if err != nil {
-		return nil, fmt.Errorf("failed to dial %s via jump host: %w", addr, err)
+		return nil, fmt.Errorf("failed to connect to %s: %w", addr, err)
 	}
 
-	sshConn, chans, reqs, err := gossh.NewClientConn(conn2, addr, config)
+	sshConn, chans, reqs, err := gossh.NewClientConn(netConn, addr, config)
 	if err != nil {
-		conn2.Close()
-		return nil, fmt.Errorf("failed to establish SSH connection to %s: %w", addr, err)
+		netConn.Close()
+		return nil, fmt.Errorf("failed to establish SSH connection: %w", err)
 	}
 
-	return gossh.NewClient(sshConn, chans, reqs), nil
+	client := gossh.NewClient(sshConn, chans, reqs)
+
+	if conn.KeepAliveInterval > 0 {
+		go keepAlive(client, time.Duration(conn.KeepAliveInterval)*time.Second)
+	}
+
+	return client, nil
 }
 
 func keepAlive(client *gossh.Client, interval time.Duration) {
@@ -143,11 +134,4 @@ func keepAlive(client *gossh.Client, interval time.Duration) {
 			return
 		}
 	}
-}
-
-type JumpConfig struct {
-	Connection *domain.Connection
-	Password   string
-	PrivateKey []byte
-	KeyPassphrase string
 }

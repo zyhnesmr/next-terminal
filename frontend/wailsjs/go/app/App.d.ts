@@ -28,6 +28,8 @@ export function SaveSetting(arg1:string,arg2:string):Promise<void>;
 
 export function StartSession(arg1:string):Promise<string>;
 
+export function SubmitMFAResponse(arg1:string,arg2:Array<string>):Promise<void>;
+
 export function TestConnection(arg1:string):Promise<void>;
 
 export function WriteToSession(arg1:string,arg2:string):Promise<void>;
