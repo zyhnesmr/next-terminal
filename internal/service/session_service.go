@@ -258,6 +258,19 @@ func (s *SessionService) removeSession(sessionID string) {
 	}
 }
 
+// GetSSHClient returns the underlying SSH client for an active session (used by SFTP).
+func (s *SessionService) GetSSHClient(sessionID string) (*gossh.Client, error) {
+	s.mu.RLock()
+	bridge, ok := s.activeSessions[sessionID]
+	s.mu.RUnlock()
+
+	if !ok {
+		return nil, fmt.Errorf("session not found: %s", sessionID)
+	}
+
+	return bridge.Client, nil
+}
+
 func (s *SessionService) CreateSessionHistory(ctx context.Context, session *domain.SessionHistory) error {
 	return s.sessionRepo.Create(ctx, session)
 }

@@ -3,6 +3,7 @@ import { useTerminalStore } from '../../stores/terminalStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { TabBar } from './TabBar';
 import { XtermTerminal } from '../terminal/XtermTerminal';
+import { SftpPanel } from '../sftp/SftpPanel';
 import { dracula } from '../../themes/dracula';
 import { Terminal as TerminalIcon, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -43,7 +44,13 @@ export function MainArea() {
                   </div>
                 </div>
               )}
-              {tab.sessionId && !tab.connecting && !tab.error && (
+              {tab.type === 'sftp' && tab.explorerId && !tab.connecting && !tab.error && (
+                <SftpPanel
+                  explorerId={tab.explorerId}
+                  onClose={() => {}}
+                />
+              )}
+              {tab.type === 'terminal' && tab.sessionId && !tab.connecting && !tab.error && (
                 <XtermTerminal
                   sessionId={tab.sessionId}
                   theme={xtermTheme}

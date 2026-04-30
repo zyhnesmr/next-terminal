@@ -18,6 +18,7 @@ type App struct {
 	connService     *service.ConnectionService
 	sessionService  *service.SessionService
 	credService     *service.CredentialService
+	sftpService     *service.SftpService
 	settingsService *service.SettingsService
 	dialer          *ssh.Dialer
 	mfaRegistry     *ssh.MFAChallengeRegistry
@@ -76,6 +77,8 @@ func (a *App) Startup(ctx context.Context) {
 	a.sessionService = service.NewSessionService(sessionRepo, a.connService, a.credService, a.dialer)
 	a.sessionService.SetContext(ctx)
 	a.sessionService.SetMFARegistry(a.mfaRegistry)
+	a.sftpService = service.NewSftpService()
+	a.sftpService.SetContext(ctx)
 	a.settingsService = service.NewSettingsService(settingsRepo)
 
 	// Listen for terminal input events from frontend
@@ -137,6 +140,9 @@ func (a *App) Startup(ctx context.Context) {
 }
 
 func (a *App) Shutdown(ctx context.Context) {
+	if a.sftpService != nil {
+		a.sftpService.CloseAllExplorers()
+	}
 	if a.sessionService != nil {
 		a.sessionService.CloseAllSessions()
 	}
@@ -223,4 +229,61 @@ func (a *App) GetSettings() (*domain.AppSettings, error) {
 
 func (a *App) SaveSetting(key string, value string) error {
 	return a.settingsService.SaveSetting(a.ctx, key, value)
+}
+
+// SFTP operations
+func (a *App) OpenSftpExplorer(sessionID string) (string, error) {
+	sshClient, err := a.sessionService.GetSSHClient(sessionID)
+	if err != nil {
+		return "", err
+	}
+	return a.sftpService.OpenExplorer(sessionID, sshClient)
+}
+
+func (a *App) SftpListDir(explorerID string, path string) ([]*domain.FileEntry, error) {
+	return a.sftpService.ListDir(explorerID, path)
+}
+
+func (a *App) SftpStat(explorerID string, path string) (*domain.FileEntry, error) {
+	return a.sftpService.Stat(explorerID, path)
+}
+
+func (a *App) SftpMkdir(explorerID string, path string) error {
+	return a.sftpService.Mkdir(explorerID, path)
+}
+
+func (a *App) SftpRemove(explorerID string, path string) error {
+	return a.sftpService.Remove(explorerID, path)
+}
+
+func (a *App) SftpRename(explorerID string, oldPath string, newPath string) error {
+	return a.sftpService.Rename(explorerID, oldPath, newPath)
+}
+
+func (a *App) SftpUpload(explorerID string, localPath string, remotePath string) error {
+	return a.sftpService.Upload(explorerID, localPath, remotePath)
+}
+
+func (a *App) SftpDownload(explorerID string, remotePath string, localPath string) error {
+	return a.sftpService.Download(explorerID, remotePath, localPath)
+}
+
+func (a *App) CloseSftpExplorer(explorerID string) error {
+	return a.sftpService.CloseExplorer(explorerID)
+}
+
+// Credential management
+func (a *App) SaveCredential(cred *domain.Credential) error {
+	if cred.ID == "" {
+		return a.credService.SaveCredential(a.ctx, cred)
+	}
+	return a.credService.UpdateCredential(a.ctx, cred)
+}
+
+func (a *App) ListCredentials() ([]*domain.Credential, error) {
+	return a.credService.ListCredentials(a.ctx)
+}
+
+func (a *App) DeleteCredential(id string) error {
+	return a.credService.DeleteCredential(a.ctx, id)
 }

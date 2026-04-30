@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTerminalStore } from '../../stores/terminalStore';
-import { X, Terminal, Loader2 } from 'lucide-react';
+import { X, Terminal, FolderOpen, Loader2 } from 'lucide-react';
 
 export function TabBar() {
   const { tabs, activeTabId, setActiveTab, closeTab } = useTerminalStore();
@@ -25,10 +25,13 @@ export function TabBar() {
         >
           {tab.connecting ? (
             <Loader2 size={12} className="animate-spin" />
+          ) : tab.type === 'sftp' ? (
+            <FolderOpen size={12} style={{ color: 'var(--accent)' }} />
           ) : (
             <Terminal size={12} />
           )}
           <span className="font-medium">{tab.connectionName}</span>
+          {tab.type === 'sftp' && <span className="opacity-50 text-xs">SFTP</span>}
           <button
             className="ml-1 p-0.5 rounded opacity-60 hover:opacity-100"
             onClick={(e) => {

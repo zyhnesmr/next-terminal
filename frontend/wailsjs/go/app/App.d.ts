@@ -4,7 +4,11 @@ import {domain} from '../models';
 
 export function CloseSession(arg1:string):Promise<void>;
 
+export function CloseSftpExplorer(arg1:string):Promise<void>;
+
 export function DeleteConnection(arg1:string):Promise<void>;
+
+export function DeleteCredential(arg1:string):Promise<void>;
 
 export function DeleteGroup(arg1:string):Promise<void>;
 
@@ -16,15 +20,35 @@ export function GetSettings():Promise<domain.AppSettings>;
 
 export function ListConnections():Promise<Array<domain.Connection>>;
 
+export function ListCredentials():Promise<Array<domain.Credential>>;
+
 export function ListGroups():Promise<Array<domain.Group>>;
+
+export function OpenSftpExplorer(arg1:string):Promise<string>;
 
 export function ResizeSession(arg1:string,arg2:number,arg3:number):Promise<void>;
 
 export function SaveConnection(arg1:domain.Connection):Promise<void>;
 
+export function SaveCredential(arg1:domain.Credential):Promise<void>;
+
 export function SaveGroup(arg1:domain.Group):Promise<void>;
 
 export function SaveSetting(arg1:string,arg2:string):Promise<void>;
+
+export function SftpDownload(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function SftpListDir(arg1:string,arg2:string):Promise<Array<domain.FileEntry>>;
+
+export function SftpMkdir(arg1:string,arg2:string):Promise<void>;
+
+export function SftpRemove(arg1:string,arg2:string):Promise<void>;
+
+export function SftpRename(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function SftpStat(arg1:string,arg2:string):Promise<domain.FileEntry>;
+
+export function SftpUpload(arg1:string,arg2:string,arg3:string):Promise<void>;
 
 export function StartSession(arg1:string):Promise<string>;
 

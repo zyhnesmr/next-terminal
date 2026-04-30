@@ -6,8 +6,16 @@ export function CloseSession(arg1) {
   return window['go']['app']['App']['CloseSession'](arg1);
 }
 
+export function CloseSftpExplorer(arg1) {
+  return window['go']['app']['App']['CloseSftpExplorer'](arg1);
+}
+
 export function DeleteConnection(arg1) {
   return window['go']['app']['App']['DeleteConnection'](arg1);
+}
+
+export function DeleteCredential(arg1) {
+  return window['go']['app']['App']['DeleteCredential'](arg1);
 }
 
 export function DeleteGroup(arg1) {
@@ -30,8 +38,16 @@ export function ListConnections() {
   return window['go']['app']['App']['ListConnections']();
 }
 
+export function ListCredentials() {
+  return window['go']['app']['App']['ListCredentials']();
+}
+
 export function ListGroups() {
   return window['go']['app']['App']['ListGroups']();
+}
+
+export function OpenSftpExplorer(arg1) {
+  return window['go']['app']['App']['OpenSftpExplorer'](arg1);
 }
 
 export function ResizeSession(arg1, arg2, arg3) {
@@ -42,12 +58,44 @@ export function SaveConnection(arg1) {
   return window['go']['app']['App']['SaveConnection'](arg1);
 }
 
+export function SaveCredential(arg1) {
+  return window['go']['app']['App']['SaveCredential'](arg1);
+}
+
 export function SaveGroup(arg1) {
   return window['go']['app']['App']['SaveGroup'](arg1);
 }
 
 export function SaveSetting(arg1, arg2) {
   return window['go']['app']['App']['SaveSetting'](arg1, arg2);
+}
+
+export function SftpDownload(arg1, arg2, arg3) {
+  return window['go']['app']['App']['SftpDownload'](arg1, arg2, arg3);
+}
+
+export function SftpListDir(arg1, arg2) {
+  return window['go']['app']['App']['SftpListDir'](arg1, arg2);
+}
+
+export function SftpMkdir(arg1, arg2) {
+  return window['go']['app']['App']['SftpMkdir'](arg1, arg2);
+}
+
+export function SftpRemove(arg1, arg2) {
+  return window['go']['app']['App']['SftpRemove'](arg1, arg2);
+}
+
+export function SftpRename(arg1, arg2, arg3) {
+  return window['go']['app']['App']['SftpRename'](arg1, arg2, arg3);
+}
+
+export function SftpStat(arg1, arg2) {
+  return window['go']['app']['App']['SftpStat'](arg1, arg2);
+}
+
+export function SftpUpload(arg1, arg2, arg3) {
+  return window['go']['app']['App']['SftpUpload'](arg1, arg2, arg3);
 }
 
 export function StartSession(arg1) {

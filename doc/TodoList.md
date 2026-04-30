@@ -47,18 +47,18 @@
 
 ## Phase 4：SFTP 与凭据管理
 
-- [ ] 实现 `internal/infrastructure/sftp/client.go`（基于已有 SSH 连接打开 SFTP 子系统）
-- [ ] 实现 `internal/infrastructure/sftp/operations.go`（ReadDir、Stat、Upload、Download、Remove、Mkdir、Rename）
-- [ ] 实现 `internal/service/sftp_service.go`（SFTP 操作协调 + 进度回调）
-- [ ] 实现 `internal/app/app.go` SFTP 绑定方法（OpenSftpExplorer、SftpListDir、SftpUpload、SftpDownload）
-- [ ] 前端：实现 `FileExplorer.tsx`（远程文件浏览器：目录列表、导航、排序）
-- [ ] 前端：实现 `FileTransferPanel.tsx`（上传/下载进度条、队列管理）
-- [ ] 前端：实现 `FileTree.tsx`（目录树展示）
-- [ ] 实现 `internal/service/credential_service.go`（凭据加密存储/解密读取）
-- [ ] 实现 `internal/infrastructure/crypto/keychain.go`（macOS Keychain + Windows DPAPI 集成）
-- [ ] 前端：实现 `KeyManager.tsx`（SSH 密钥导入、指纹展示、删除管理）
-- [ ] 前端：ConnectionForm 增加凭据选择（已有凭据 vs 内联输入）
-- [ ] 验证：SFTP 文件浏览、上传、下载正常；凭据加密存储与解密可用
+- [x] 实现 `internal/infrastructure/sftp/client.go`（基于已有 SSH 连接打开 SFTP 子系统）
+- [x] 实现 `internal/infrastructure/sftp/operations.go`（ReadDir、Stat、Upload、Download、Remove、Mkdir、Rename）
+- [x] 实现 `internal/service/sftp_service.go`（SFTP 操作协调 + 进度回调）
+- [x] 实现 `internal/app/app.go` SFTP 绑定方法（OpenSftpExplorer、SftpListDir、SftpUpload、SftpDownload）
+- [x] 前端：实现 `FileExplorer.tsx`（远程文件浏览器：目录列表、导航、排序）
+- [x] 前端：实现 `FileTransferPanel.tsx`（上传/下载进度条、队列管理）
+- [x] 前端：实现 `FileTree.tsx`（目录树展示）
+- [x] 实现 `internal/service/credential_service.go`（凭据加密存储/解密读取）
+- [x] 实现 `internal/infrastructure/crypto/keychain.go`（macOS Keychain + Windows DPAPI 集成）
+- [x] 前端：实现 `KeyManager.tsx`（SSH 密钥导入、指纹展示、删除管理）
+- [x] 前端：ConnectionForm 增加凭据选择（已有凭据 vs 内联输入）
+- [x] 验证：SFTP 文件浏览、上传、下载正常；凭据加密存储与解密可用
 
 ## Phase 5：主题与打磨
 

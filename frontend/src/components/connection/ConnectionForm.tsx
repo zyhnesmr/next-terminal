@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useConnectionStore } from '../../stores/connectionStore';
+import { useCredentialStore } from '../../stores/credentialStore';
 import { domain } from '../../../wailsjs/go/models';
 import { X, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -10,7 +11,12 @@ interface ConnectionFormProps {
 
 export function ConnectionForm({ connection, onClose }: ConnectionFormProps) {
   const { connections, addConnection, updateConnection } = useConnectionStore();
+  const { credentials, loadCredentials } = useCredentialStore();
   const isEdit = !!connection?.id;
+
+  useEffect(() => {
+    loadCredentials();
+  }, []);
 
   const [name, setName] = useState(connection?.name || '');
   const [host, setHost] = useState(connection?.host || '');
@@ -19,6 +25,8 @@ export function ConnectionForm({ connection, onClose }: ConnectionFormProps) {
   const [authMethod, setAuthMethod] = useState(connection?.authMethod || 'password');
   const [password, setPassword] = useState('');
   const [groupId, setGroupId] = useState(connection?.groupId || '');
+  const [credentialId, setCredentialId] = useState(connection?.credentialId || '');
+  const [useCredential, setUseCredential] = useState(!!connection?.credentialId);
   const [jumpHostIds, setJumpHostIds] = useState<string[]>(() => {
     try {
       if (connection?.jumpHostIds) return JSON.parse(connection.jumpHostIds);
@@ -44,10 +52,11 @@ export function ConnectionForm({ connection, onClose }: ConnectionFormProps) {
       username,
       authMethod,
       groupId: groupId || undefined,
+      credentialId: useCredential ? credentialId : undefined,
       jumpHostIds: jumpHostIds.length > 0 ? JSON.stringify(jumpHostIds) : '',
     };
 
-    if (authMethod === 'password' || authMethod === 'password+mfa') {
+    if (!useCredential && (authMethod === 'password' || authMethod === 'password+mfa')) {
       if (!isEdit || password) {
         (conn as any).password = password;
       }
@@ -143,7 +152,35 @@ export function ConnectionForm({ connection, onClose }: ConnectionFormProps) {
             </select>
           </div>
 
-          {(authMethod === 'password' || authMethod === 'password+mfa') && (
+          {/* Credential selection */}
+          <div className="border-t pt-3" style={{ borderColor: 'var(--border)' }}>
+            <label className="flex items-center gap-2 text-xs font-medium mb-2 opacity-70">
+              <input
+                type="checkbox"
+                checked={useCredential}
+                onChange={(e) => setUseCredential(e.target.checked)}
+                className="rounded"
+              />
+              Use saved credential
+            </label>
+            {useCredential && (
+              <select
+                value={credentialId}
+                onChange={(e) => setCredentialId(e.target.value)}
+                className="w-full px-3 py-1.5 rounded text-sm outline-none"
+                style={inputStyle}
+              >
+                <option value="">Select credential...</option>
+                {credentials.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.type})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {!useCredential && (authMethod === 'password' || authMethod === 'password+mfa') && (
             <div>
               <label className="block text-xs font-medium mb-1 opacity-70">
                 Password {isEdit && '(leave empty to keep current)'}

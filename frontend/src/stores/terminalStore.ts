@@ -1,5 +1,7 @@
 import { create } from 'zustand';
-import { StartSession, CloseSession } from '../../wailsjs/go/app/App';
+import { StartSession, CloseSession, OpenSftpExplorer } from '../../wailsjs/go/app/App';
+
+type TabType = 'terminal' | 'sftp';
 
 interface TerminalTab {
   id: string;
@@ -7,7 +9,8 @@ interface TerminalTab {
   connectionName: string;
   host: string;
   sessionId: string | null;
-  active: boolean;
+  explorerId: string | null;
+  type: TabType;
   connecting: boolean;
   error: string | null;
 }
@@ -17,6 +20,7 @@ interface TerminalState {
   activeTabId: string | null;
 
   openTab: (connectionId: string, connectionName: string, host: string) => Promise<void>;
+  openSftpTab: (connectionId: string, connectionName: string, host: string) => Promise<void>;
   closeTab: (tabId: string) => void;
   setActiveTab: (tabId: string) => void;
 }
@@ -28,14 +32,14 @@ export const useTerminalStore = create<TerminalState>((set, get) => ({
   openTab: async (connectionId, connectionName, host) => {
     const tabId = crypto.randomUUID();
 
-    // Add tab in connecting state
     const tab: TerminalTab = {
       id: tabId,
       connectionId,
       connectionName,
       host,
       sessionId: null,
-      active: true,
+      explorerId: null,
+      type: 'terminal',
       connecting: true,
       error: null,
     };
@@ -47,6 +51,47 @@ export const useTerminalStore = create<TerminalState>((set, get) => ({
       set({
         tabs: get().tabs.map((t) =>
           t.id === tabId ? { ...t, sessionId, connecting: false } : t
+        ),
+      });
+    } catch (e: any) {
+      set({
+        tabs: get().tabs.map((t) =>
+          t.id === tabId ? { ...t, connecting: false, error: e.toString() } : t
+        ),
+      });
+    }
+  },
+
+  openSftpTab: async (connectionId, connectionName, host) => {
+    const tabId = crypto.randomUUID();
+
+    const tab: TerminalTab = {
+      id: tabId,
+      connectionId,
+      connectionName,
+      host,
+      sessionId: null,
+      explorerId: null,
+      type: 'sftp',
+      connecting: true,
+      error: null,
+    };
+
+    set({ tabs: [...get().tabs, tab], activeTabId: tabId });
+
+    try {
+      // Need an SSH session first, then open SFTP on it
+      const sessionId = await StartSession(connectionId);
+      set({
+        tabs: get().tabs.map((t) =>
+          t.id === tabId ? { ...t, sessionId } : t
+        ),
+      });
+
+      const explorerId = await OpenSftpExplorer(sessionId);
+      set({
+        tabs: get().tabs.map((t) =>
+          t.id === tabId ? { ...t, explorerId, connecting: false } : t
         ),
       });
     } catch (e: any) {

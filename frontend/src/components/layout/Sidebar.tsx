@@ -3,7 +3,7 @@ import { useConnectionStore } from '../../stores/connectionStore';
 import { useTerminalStore } from '../../stores/terminalStore';
 import { ConnectionForm } from '../connection/ConnectionForm';
 import { domain } from '../../../wailsjs/go/models';
-import { Folder, Search, Settings, Plus, Trash2, Terminal, Pencil } from 'lucide-react';
+import { Folder, Search, Settings, Plus, Trash2, Terminal, Pencil, FolderOpen } from 'lucide-react';
 
 export function Sidebar() {
   const { connections, groups, searchQuery, loadConnections, loadGroups, setSearchQuery, removeConnection } = useConnectionStore();
@@ -134,6 +134,8 @@ function ConnectionItem({ conn, onConnect, onDelete, onEdit }: {
   onDelete: (id: string) => void;
   onEdit: (c: domain.Connection) => void;
 }) {
+  const { openSftpTab } = useTerminalStore();
+
   return (
     <div
       className="flex items-center gap-2 px-4 py-1.5 cursor-pointer group text-sm transition-colors"
@@ -149,6 +151,14 @@ function ConnectionItem({ conn, onConnect, onDelete, onEdit }: {
           {conn.username}@{conn.host}:{conn.port}
         </div>
       </div>
+      <button
+        className="opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity"
+        style={{ color: 'var(--text-secondary)' }}
+        onClick={(e) => { e.stopPropagation(); openSftpTab(conn.id, conn.name, conn.host); }}
+        title="Open SFTP"
+      >
+        <FolderOpen size={12} />
+      </button>
       <button
         className="opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity"
         style={{ color: 'var(--text-secondary)' }}
