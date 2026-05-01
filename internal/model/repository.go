@@ -36,6 +36,7 @@ type SessionRepository interface {
 	Create(ctx context.Context, session *domain.SessionHistory) error
 	UpdateEndTime(ctx context.Context, id string, endedAt int64, exitStatus int) error
 	ListByConnection(ctx context.Context, connectionID string, limit int) ([]*domain.SessionHistory, error)
+	ListRecent(ctx context.Context, limit int) ([]*domain.SessionHistory, error)
 }
 
 type SettingsRepository interface {

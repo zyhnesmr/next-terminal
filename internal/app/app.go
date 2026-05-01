@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -136,10 +137,56 @@ func (a *App) Startup(ctx context.Context) {
 		}
 	})
 
+	// Restore window state
+	a.restoreWindowState(ctx)
+
 	slog.Info("application started successfully")
 }
 
+func (a *App) restoreWindowState(ctx context.Context) {
+	x, err := a.settingsService.GetSetting(ctx, "window_x")
+	if err != nil || x == "" {
+		runtime.WindowCenter(ctx)
+		return
+	}
+	y, _ := a.settingsService.GetSetting(ctx, "window_y")
+	w, _ := a.settingsService.GetSetting(ctx, "window_width")
+	h, _ := a.settingsService.GetSetting(ctx, "window_height")
+
+	var xi, yi, wi, hi int
+	json.Unmarshal([]byte(x), &xi)
+	json.Unmarshal([]byte(y), &yi)
+	json.Unmarshal([]byte(w), &wi)
+	json.Unmarshal([]byte(h), &hi)
+
+	if wi > 0 && hi > 0 {
+		runtime.WindowSetSize(ctx, wi, hi)
+		runtime.WindowSetPosition(ctx, xi, yi)
+	} else {
+		runtime.WindowCenter(ctx)
+	}
+}
+
 func (a *App) Shutdown(ctx context.Context) {
+	// Save window state
+	x, y := runtime.WindowGetPosition(ctx)
+	w, h := runtime.WindowGetSize(ctx)
+
+	if a.settingsService != nil {
+		if xb, err := json.Marshal(x); err == nil {
+			a.settingsService.SaveSetting(ctx, "window_x", string(xb))
+		}
+		if yb, err := json.Marshal(y); err == nil {
+			a.settingsService.SaveSetting(ctx, "window_y", string(yb))
+		}
+		if wb, err := json.Marshal(w); err == nil {
+			a.settingsService.SaveSetting(ctx, "window_width", string(wb))
+		}
+		if hb, err := json.Marshal(h); err == nil {
+			a.settingsService.SaveSetting(ctx, "window_height", string(hb))
+		}
+	}
+
 	if a.sftpService != nil {
 		a.sftpService.CloseAllExplorers()
 	}
@@ -217,6 +264,17 @@ func (a *App) GetActiveSessions() []*domain.ActiveSession {
 	return a.sessionService.GetActiveSessions()
 }
 
+func (a *App) GetSessionHistory(limit int) ([]*domain.SessionHistory, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	return a.sessionService.ListRecentSessions(a.ctx, limit)
+}
+
+func (a *App) SetTabVisibility(sessionID string, visible bool) {
+	a.sessionService.SetTabVisibility(sessionID, visible)
+}
+
 // MFA
 func (a *App) SubmitMFAResponse(sessionID string, responses []string) error {
 	return a.sessionService.SubmitMFAResponse(sessionID, responses)
@@ -229,6 +287,18 @@ func (a *App) GetSettings() (*domain.AppSettings, error) {
 
 func (a *App) SaveSetting(key string, value string) error {
 	return a.settingsService.SaveSetting(a.ctx, key, value)
+}
+
+func (a *App) GetThemes() []domain.ThemeInfo {
+	return []domain.ThemeInfo{
+		{ID: "dracula", Name: "Dracula"},
+		{ID: "monokai", Name: "Monokai"},
+		{ID: "solarized-dark", Name: "Solarized Dark"},
+		{ID: "solarized-light", Name: "Solarized Light"},
+		{ID: "nord", Name: "Nord"},
+		{ID: "catppuccin-mocha", Name: "Catppuccin Mocha"},
+		{ID: "github-dark", Name: "GitHub Dark"},
+	}
 }
 
 // SFTP operations

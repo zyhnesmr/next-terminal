@@ -16,7 +16,11 @@ export function GetActiveSessions():Promise<Array<domain.ActiveSession>>;
 
 export function GetConnection(arg1:string):Promise<domain.Connection>;
 
+export function GetSessionHistory(arg1:number):Promise<Array<domain.SessionHistory>>;
+
 export function GetSettings():Promise<domain.AppSettings>;
+
+export function GetThemes():Promise<Array<domain.ThemeInfo>>;
 
 export function ListConnections():Promise<Array<domain.Connection>>;
 
@@ -35,6 +39,8 @@ export function SaveCredential(arg1:domain.Credential):Promise<void>;
 export function SaveGroup(arg1:domain.Group):Promise<void>;
 
 export function SaveSetting(arg1:string,arg2:string):Promise<void>;
+
+export function SetTabVisibility(arg1:string,arg2:boolean):Promise<void>;
 
 export function SftpDownload(arg1:string,arg2:string,arg3:string):Promise<void>;
 

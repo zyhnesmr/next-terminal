@@ -4,14 +4,14 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { TabBar } from './TabBar';
 import { XtermTerminal } from '../terminal/XtermTerminal';
 import { SftpPanel } from '../sftp/SftpPanel';
-import { dracula } from '../../themes/dracula';
+import { getXtermTheme } from '../../themes';
 import { Terminal as TerminalIcon, AlertCircle, Loader2 } from 'lucide-react';
 
 export function MainArea() {
   const { tabs, activeTabId } = useTerminalStore();
   const { settings } = useSettingsStore();
 
-  const xtermTheme = dracula.xterm;
+  const xtermTheme = getXtermTheme(settings.theme);
 
   return (
     <div className="flex-1 flex flex-col min-w-0" style={{ backgroundColor: 'var(--bg-primary)' }}>

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	gossh "golang.org/x/crypto/ssh"
@@ -152,6 +153,7 @@ func (s *SessionService) StartSession(ctx context.Context, connectionID string) 
 	history := &domain.SessionHistory{
 		ID:           sessionID,
 		ConnectionID: connectionID,
+		StartedAt:    time.Now().Unix(),
 	}
 	if err := s.sessionRepo.Create(ctx, history); err != nil {
 		slog.Warn("failed to record session history", "error", err)
@@ -204,7 +206,7 @@ func (s *SessionService) CloseSession(sessionID string) error {
 	err := bridge.Close()
 
 	if s.sessionRepo != nil {
-		s.sessionRepo.UpdateEndTime(context.Background(), sessionID, 0, 0)
+		s.sessionRepo.UpdateEndTime(context.Background(), sessionID, time.Now().Unix(), 0)
 	}
 
 	return err
@@ -215,6 +217,15 @@ func (s *SessionService) SubmitMFAResponse(sessionID string, responses []string)
 		return fmt.Errorf("MFA not initialized")
 	}
 	return s.mfaRegistry.SubmitResponse(sessionID, responses)
+}
+
+func (s *SessionService) SetTabVisibility(sessionID string, visible bool) {
+	s.mu.RLock()
+	bridge, ok := s.activeSessions[sessionID]
+	s.mu.RUnlock()
+	if ok {
+		bridge.SetVisible(visible)
+	}
 }
 
 func (s *SessionService) GetActiveSessions() []*domain.ActiveSession {
@@ -234,6 +245,10 @@ func (s *SessionService) GetActiveSessions() []*domain.ActiveSession {
 
 func (s *SessionService) ListSessionHistory(ctx context.Context, connectionID string, limit int) ([]*domain.SessionHistory, error) {
 	return s.sessionRepo.ListByConnection(ctx, connectionID, limit)
+}
+
+func (s *SessionService) ListRecentSessions(ctx context.Context, limit int) ([]*domain.SessionHistory, error) {
+	return s.sessionRepo.ListRecent(ctx, limit)
 }
 
 func (s *SessionService) CloseAllSessions() {

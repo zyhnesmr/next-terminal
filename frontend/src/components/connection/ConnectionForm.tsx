@@ -10,7 +10,7 @@ interface ConnectionFormProps {
 }
 
 export function ConnectionForm({ connection, onClose }: ConnectionFormProps) {
-  const { connections, addConnection, updateConnection } = useConnectionStore();
+  const { connections, groups, addConnection, updateConnection } = useConnectionStore();
   const { credentials, loadCredentials } = useCredentialStore();
   const isEdit = !!connection?.id;
 
@@ -120,6 +120,17 @@ export function ConnectionForm({ connection, onClose }: ConnectionFormProps) {
             <label className="block text-xs font-medium mb-1 opacity-70">Name</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} required
               className="w-full px-3 py-1.5 rounded text-sm outline-none" style={inputStyle} placeholder="My Server" />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium mb-1 opacity-70">Group</label>
+            <select value={groupId} onChange={(e) => setGroupId(e.target.value)}
+              className="w-full px-3 py-1.5 rounded text-sm outline-none" style={inputStyle}>
+              <option value="">No group</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </select>
           </div>
 
           <div className="grid grid-cols-3 gap-3">

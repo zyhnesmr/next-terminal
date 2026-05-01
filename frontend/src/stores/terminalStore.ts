@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { StartSession, CloseSession, OpenSftpExplorer } from '../../wailsjs/go/app/App';
+import { StartSession, CloseSession, OpenSftpExplorer, SetTabVisibility } from '../../wailsjs/go/app/App';
 
 type TabType = 'terminal' | 'sftp';
 
@@ -115,5 +115,20 @@ export const useTerminalStore = create<TerminalState>((set, get) => ({
     set({ tabs, activeTabId });
   },
 
-  setActiveTab: (tabId) => set({ activeTabId: tabId }),
+  setActiveTab: (tabId) => {
+    const { tabs, activeTabId } = get();
+    // Set old tab as hidden
+    if (activeTabId) {
+      const oldTab = tabs.find((t) => t.id === activeTabId);
+      if (oldTab?.sessionId) {
+        SetTabVisibility(oldTab.sessionId, false).catch(() => {});
+      }
+    }
+    // Set new tab as visible
+    const newTab = tabs.find((t) => t.id === tabId);
+    if (newTab?.sessionId) {
+      SetTabVisibility(newTab.sessionId, true).catch(() => {});
+    }
+    set({ activeTabId: tabId });
+  },
 }));

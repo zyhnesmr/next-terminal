@@ -30,8 +30,16 @@ export function GetConnection(arg1) {
   return window['go']['app']['App']['GetConnection'](arg1);
 }
 
+export function GetSessionHistory(arg1) {
+  return window['go']['app']['App']['GetSessionHistory'](arg1);
+}
+
 export function GetSettings() {
   return window['go']['app']['App']['GetSettings']();
+}
+
+export function GetThemes() {
+  return window['go']['app']['App']['GetThemes']();
 }
 
 export function ListConnections() {
@@ -68,6 +76,10 @@ export function SaveGroup(arg1) {
 
 export function SaveSetting(arg1, arg2) {
   return window['go']['app']['App']['SaveSetting'](arg1, arg2);
+}
+
+export function SetTabVisibility(arg1, arg2) {
+  return window['go']['app']['App']['SetTabVisibility'](arg1, arg2);
 }
 
 export function SftpDownload(arg1, arg2, arg3) {

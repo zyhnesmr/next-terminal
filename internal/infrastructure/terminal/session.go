@@ -23,7 +23,12 @@ type SSHSessionBridge struct {
 	stdinWriter  io.Writer
 	done         chan struct{}
 	once         sync.Once
+	visible      bool
+	outputBuffer []byte
+	mu           sync.Mutex
 }
+
+const maxBufferSize = 256 * 1024 // 256KB output buffer
 
 func NewSSHSessionBridge(ctx context.Context, id string, connectionID string, client *gossh.Client) *SSHSessionBridge {
 	childCtx, cancel := context.WithCancel(ctx)
@@ -34,6 +39,7 @@ func NewSSHSessionBridge(ctx context.Context, id string, connectionID string, cl
 		ctx:          childCtx,
 		cancel:       cancel,
 		done:         make(chan struct{}),
+		visible:      true, // visible by default when first created
 	}
 }
 
@@ -122,6 +128,20 @@ func (b *SSHSessionBridge) Close() error {
 	return err
 }
 
+func (b *SSHSessionBridge) SetVisible(visible bool) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	wasHidden := !b.visible
+	b.visible = visible
+
+	// Flush buffered output when becoming visible
+	if visible && wasHidden && len(b.outputBuffer) > 0 && b.onOutput != nil {
+		b.onOutput(b.outputBuffer)
+		b.outputBuffer = nil
+	}
+}
+
 func (b *SSHSessionBridge) Done() <-chan struct{} {
 	return b.done
 }
@@ -136,8 +156,26 @@ func (b *SSHSessionBridge) readPump(reader io.Reader) {
 		}
 
 		n, err := reader.Read(buf)
-		if n > 0 && b.onOutput != nil {
-			b.onOutput(buf[:n])
+		if n > 0 {
+			b.mu.Lock()
+			if b.visible {
+				if b.onOutput != nil {
+					b.onOutput(buf[:n])
+				}
+			} else {
+				// Buffer output when hidden
+				if len(b.outputBuffer)+n <= maxBufferSize {
+					b.outputBuffer = append(b.outputBuffer, buf[:n]...)
+				} else {
+					// Trim oldest data to make room (keep last ~75%)
+					trimTo := maxBufferSize / 2
+					if trimTo > len(b.outputBuffer) {
+						trimTo = len(b.outputBuffer)
+					}
+					b.outputBuffer = append(b.outputBuffer[len(b.outputBuffer)-trimTo:], buf[:n]...)
+				}
+			}
+			b.mu.Unlock()
 		}
 		if err != nil {
 			if b.ctx.Err() == nil && b.onError != nil {

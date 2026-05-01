@@ -174,6 +174,48 @@ export namespace domain {
 	        this.updatedAt = source["updatedAt"];
 	    }
 	}
+	export class SessionHistory {
+	    id: string;
+	    connectionId: string;
+	    connectionName?: string;
+	    host?: string;
+	    startedAt: number;
+	    endedAt?: number;
+	    exitStatus?: number;
+	    bytesSent: number;
+	    bytesRecv: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new SessionHistory(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.connectionId = source["connectionId"];
+	        this.connectionName = source["connectionName"];
+	        this.host = source["host"];
+	        this.startedAt = source["startedAt"];
+	        this.endedAt = source["endedAt"];
+	        this.exitStatus = source["exitStatus"];
+	        this.bytesSent = source["bytesSent"];
+	        this.bytesRecv = source["bytesRecv"];
+	    }
+	}
+	export class ThemeInfo {
+	    id: string;
+	    name: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ThemeInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	    }
+	}
 
 }
 

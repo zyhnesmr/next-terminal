@@ -47,6 +47,40 @@ func (r *SessionRepo) ListByConnection(ctx context.Context, connectionID string,
 	}
 	defer rows.Close()
 
+	return scanSessions(rows)
+}
+
+func (r *SessionRepo) ListRecent(ctx context.Context, limit int) ([]*domain.SessionHistory, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT s.id, s.connection_id, c.name, c.host,
+		       s.started_at, s.ended_at, s.exit_status, s.bytes_sent, s.bytes_recv
+		FROM session_history s
+		LEFT JOIN connections c ON c.id = s.connection_id
+		ORDER BY s.started_at DESC LIMIT ?`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var sessions []*domain.SessionHistory
+	for rows.Next() {
+		s := &domain.SessionHistory{}
+		var connName, host sql.NullString
+		var endedAt, exitStatus sql.NullInt64
+		if err := rows.Scan(&s.ID, &s.ConnectionID, &connName, &host,
+			&s.StartedAt, &endedAt, &exitStatus, &s.BytesSent, &s.BytesRecv); err != nil {
+			return nil, err
+		}
+		s.ConnectionName = connName.String
+		s.Host = host.String
+		s.EndedAt = endedAt.Int64
+		s.ExitStatus = int(exitStatus.Int64)
+		sessions = append(sessions, s)
+	}
+	return sessions, rows.Err()
+}
+
+func scanSessions(rows *sql.Rows) ([]*domain.SessionHistory, error) {
 	var sessions []*domain.SessionHistory
 	for rows.Next() {
 		s := &domain.SessionHistory{}
